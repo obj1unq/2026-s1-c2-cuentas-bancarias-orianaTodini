@@ -1,9 +1,68 @@
 import casa.*
 
 describe "casa de pepe y julian" {
+  test " iniciar gastos del mes con cuenta corriente  "{
+    casa.cuentasBancarias(cuentaCorriente)
+    cuentaCorriente.depositar(300)
+    assert.equals(0, casa.gastosMes())
+    assert.equals(300, cuentaCorriente.saldo())
+    casa.comprar(200)
+    assert.equals (200, casa.gastosMes())
+    assert.equals(100, cuentaCorriente.saldo())
+    casa.comprar(400)
+    assert.equals(600, casa.gastosMes())
+    assert.equals(-300, cuentaCorriente.saldo())
+  }
+}
 
-  // Descomentar si hiciera falta un metodo para inicializar el ambiente
-  // method initialize() {
-  // }
+test " iniciar gastos del mes con cuenta con gastos" {
+  casa.cuentasBancarias(cuentaConGastos)
+  cuentaConGastos.operacion(20)
+  cuentaConGastos.depositar(1000)
+  assert.equals(980, cuentaConGastos.saldo())
+  cuentaConGastos.extraer(580)
+  assert.equals(400,cuentaConGastos.saldo())
+  cuentaConGastos.extraer(500)
+  assert.equals(-100, cuentaConGastos.saldo())
+  cuentaConGastos.depositar(150)
+  assert.equals(30, cuentaConGastos.saldo())
+}
 
+test "cuenta con gastos no permite depositar un monto menor o igual al costo de la operacion "{
+  casa.cuentasBancarias(cuentaConGastos)
+  cuentaConGastos.operacion(20)
+  assert.throwsException({cuentaConGastos.depositar(10)})
+  assert.equals(0, cuentaConGastos.saldo())
+}
+
+// ejercicio 2 
+
+describe "casa pepe y julian con cuenta combinada " {
+test "iniciar gastos del mes con cuenta combinada" {
+  casa.cuentasBancarias(cuentaCombinada)
+  cuentaCombinada.cuentaActiva(cuentaConGastos)
+  assert.equals(cuentaConGastos, cuentaCombinada.cuentaActual())
+    cuentaConGastos.operacion(20)
+    assert.equals(20, cuentaConGastos.operacion())
+    assert.equals(0, cuentaConGastos.saldo())
+    cuentaCombinada.cuentaActiva(cuentaCorriente)
+    assert.equals(cuentaCorriente, cuentaCombinada.cuentaActual())
+    cuentaCorriente.depositar(300)
+    assert.equals(300, cuentaCorriente.saldo())
+    casa.cuentasBancarias(cuentaCombinada)
+    cuentaCombinada.cuentaActiva(cuentaConGastos)
+    cuentaCombinada.depositar(100)
+    assert.equals(80, cuentaConGastos.saldo())
+    assert.equals(380, cuentaCombinada.saldo())
+    casa.cuentasBancarias(cuentaCombinada)
+    casa.comprar(280) 
+    assert.equals(280, casa.gastosMes())
+    assert.equals(100, cuentaCombinada.saldo())
+    assert.equals(0, cuentaConGastos.saldo())
+    assert.equals(100, cuentaCorriente.saldo())
+    cuentaCombinada.cuentaActiva(cuentaCorriente)
+    cuentaCombinada.depositar(10) 
+    assert.equals(100, cuentaCombinada.saldo())
+    
+    }
 }
