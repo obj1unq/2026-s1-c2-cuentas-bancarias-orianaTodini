@@ -1,6 +1,8 @@
 object casa {
     var gastosMes = 0 
     var cuentasBancaria = null  
+    var viveres = 0 
+    var montoDeRepaciones= 0
     method gastosMes() {
       return gastosMes
     }
@@ -14,6 +16,36 @@ object casa {
     method cambiarMes() {
       gastosMes = 0 
     }
+    method vivere(_vivere) {
+      viveres= _vivere
+    }
+    method viveres(){
+      return viveres
+    }
+    method comprarViveres(calidad,porcentajeAComprar) {
+      if (viveres + porcentajeAComprar < 1){ 
+      cuentasBancaria.extraer(calidad * porcentajeAComprar)
+      viveres = viveres + porcentajeAComprar 
+    } else { 
+      self.viveres()
+    }
+    }
+    method romper(monto) {
+      montoDeRepaciones= montoDeRepaciones + monto 
+    }
+    method hayViveresSuficientes() {
+      return viveres > 0.4 
+    }
+    method hayQueHacerReparaciones() {
+      return montoDeRepaciones > 0
+    }
+    method estaEnOrden() {
+      return self.hayViveresSuficientes() && self.hayQueHacerReparaciones()
+    }
+    method montoDeRepaciones() {
+      return montoDeRepaciones
+    }
+    
     }
 
 object cuentaCorriente {
@@ -59,13 +91,14 @@ object cuentaCombinada {
   var cuentaprimaria = cuentaCorriente
   var cuentaSecundaria = cuentaConGastos 
   method cuentaActiva(cuenta) {
-    if (cuenta == cuentaCorriente){
-      cuentaprimaria = cuentaCorriente
-      cuentaSecundaria = cuentaConGastos
-    } else {
-      cuentaprimaria = cuentaConGastos
-      cuentaSecundaria = cuentaCorriente
-    }
+    cuentaprimaria = cuenta
+    cuentaSecundaria = self.obtenerCuentaSecundaria(cuenta)
+  }
+  method obtenerCuentaSecundaria(cuenta) {
+    if (cuenta == cuentaCorriente)
+      return cuentaConGastos
+    else
+      return cuentaCorriente
   }
   method cuentaActual() {
     return cuentaprimaria

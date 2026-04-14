@@ -60,9 +60,29 @@ test "iniciar gastos del mes con cuenta combinada" {
     assert.equals(100, cuentaCombinada.saldo())
     assert.equals(0, cuentaConGastos.saldo())
     assert.equals(100, cuentaCorriente.saldo())
-    cuentaCombinada.cuentaActiva(cuentaCorriente)
-    cuentaCombinada.depositar(10) 
-    assert.equals(100, cuentaCombinada.saldo())
-    
+    cuentaCombinada.cuentaActiva(cuentaConGastos)
+    assert.equals(cuentaConGastos, cuentaCombinada.cuentaActual())
+    assert.equals(100, cuentaCorriente.saldo())
+     cuentaCombinada.depositar(10)
+    assert.throwsException({cuentaCombinada.depositar(10)})
+    // PREGUNTAR ejercicio 2
     }
+}
+
+describe "casa pepe y julian con viveres y reparaciones"{
+  test " comprar viveres y reparaciones"{
+    casa.vivere(0.3)
+    assert.equals(0.3, casa.viveres())
+    assert.notThat(casa.hayQueHacerReparaciones())
+    casa.cuentasBancarias(cuentaCorriente)
+    cuentaCorriente.depositar(2000)
+    assert.equals(2000, cuentaCorriente.saldo())
+    casa.romper(1000)
+    assert.equals(1000, casa.montoDeRepaciones())
+    assert.notThat(casa.estaEnOrden())
+    assert.notThat(casa.hayViveresSuficientes())
+    assert.that(casa.hayQueHacerReparaciones())
+    casa.comprarViveres(2, 0.8)
+    assert.equals(0.3, casa.viveres())
+  }
 }
