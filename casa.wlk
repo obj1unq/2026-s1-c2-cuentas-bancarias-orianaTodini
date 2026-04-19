@@ -1,20 +1,31 @@
 object casa {
-    var gastosMes = 0 
+    var gastosDelMes = 0 
     var cuentasBancaria = null  
     var viveres = 0 
     var montoDeRepaciones= 0
-    method gastosMes() {
-      return gastosMes
+    var modoDeAhorro= minimoEIndispensable
+    method modoDeAhorro(_modoDeAhorro) {
+      modoDeAhorro= _modoDeAhorro
+    }
+    method modoDeAhorro() {
+      return modoDeAhorro
+    }
+    method gastosDelMes() {
+      return gastosDelMes
     }
     method cuentasBancarias(_cuentas) {
       cuentasBancaria = _cuentas
     }
     method comprar(monto) {
-      gastosMes = gastosMes + monto
+      gastosDelMes = gastosDelMes + monto
       cuentasBancaria.extraer(monto)
     }
     method cambiarMes() {
-      gastosMes = 0 
+      gastosDelMes = 0 
+      self.mantenimiento()
+    }
+    method mantenimiento() {
+      modoDeAhorro.realizarMantenimiento()
     }
     method vivere(_vivere) {
       viveres= _vivere
@@ -23,29 +34,39 @@ object casa {
       return viveres
     }
     method comprarViveres(calidad,porcentajeAComprar) {
-      if (viveres + porcentajeAComprar < 1){ 
-      cuentasBancaria.extraer(calidad * porcentajeAComprar)
+      if (viveres + porcentajeAComprar <= 100){ 
       viveres = viveres + porcentajeAComprar 
+      gastosDelMes= gastosDelMes + calidad * porcentajeAComprar
+      cuentasBancaria.extraer(calidad * porcentajeAComprar)
     } else { 
-      self.viveres()
+      self.error("no se pueden comprar mas viveres del necesario")
     }
     }
     method romper(monto) {
       montoDeRepaciones= montoDeRepaciones + monto 
     }
     method hayViveresSuficientes() {
-      return viveres > 0.4 
+      return viveres >= 40 
     }
     method hayQueHacerReparaciones() {
       return montoDeRepaciones > 0
     }
     method estaEnOrden() {
-      return self.hayViveresSuficientes() && self.hayQueHacerReparaciones()
+      return self.hayViveresSuficientes() and !self.hayQueHacerReparaciones()
     }
-    method montoDeRepaciones() {
+    method montoDeReparaciones() {
       return montoDeRepaciones
     }
-    
+    method montoDeReparaciones(_montoDeReparaciones){
+      montoDeRepaciones = _montoDeReparaciones
+    }
+
+    method realizarReparaciones() {
+      cuentasBancaria.extraer(montoDeRepaciones)
+      gastosDelMes= gastosDelMes + montoDeRepaciones
+      montoDeRepaciones = 0
+    }
+  
     }
 
 object cuentaCorriente {
@@ -58,6 +79,9 @@ object cuentaCorriente {
   } 
   method extraer(monto) {
     saldo = saldo - monto 
+  }
+  method isCorriente() {
+    return true
   }
 }
 
@@ -85,6 +109,9 @@ object cuentaConGastos {
   method operacion() {
     return operacion
   }
+  method isCorriente() {
+    return false
+  }
 }
 
 object cuentaCombinada {
@@ -95,7 +122,7 @@ object cuentaCombinada {
     cuentaSecundaria = self.obtenerCuentaSecundaria(cuenta)
   }
   method obtenerCuentaSecundaria(cuenta) {
-    if (cuenta == cuentaCorriente)
+    if (cuenta.isCorriente())
       return cuentaConGastos
     else
       return cuentaCorriente
@@ -112,7 +139,7 @@ object cuentaCombinada {
   method extraer(monto) {
     self.validar(monto)
     if (cuentaprimaria.saldo() < monto ){
-      var saldoActual= cuentaprimaria.saldo()
+      const saldoActual= cuentaprimaria.saldo()
       cuentaprimaria.extraer(saldoActual)  
       cuentaSecundaria.extraer(monto - saldoActual)
     } else {
@@ -125,4 +152,49 @@ object cuentaCombinada {
     }
   }
 }
+
+object minimoEIndispensable {  
+  var calidad= 0  
+  
+  method realizarMantenimiento() {
+    if (!casa.hayViveresSuficientes()) {
+       const viveresSuficientes = 40 - casa.viveres()
+      casa.comprarViveres(calidad,viveresSuficientes)
+    } else {
+      self.error(" la cantidad de viveres es superior a lo necesario ")
+    }
+  }
+  method calidad(_calidad) {
+    calidad= _calidad 
+  }
+  method calidad() {
+    return calidad 
+  }
+}
+
+
+object full { 
+ method realizarMantenimiento() {
+    self.mantenimientoViveres()
+    self.mantenimientoReparaciones()
+ }
+ method mantenimientoViveres() {
+   if (casa.estaEnOrden()){
+    casa.comprarViveres(5, 100 - casa.viveres())
+   } else{ 
+     casa.comprarViveres(5,40 - casa.viveres())
+   }
+ }
+ method mantenimientoReparaciones() {
+  if (cuentaCorriente.saldo()> casa.montoDeReparaciones()){
+    casa.realizarReparaciones()
+  } else {
+    self.error("no hay suficiente dinero para realizar las reparaciones")
+  }
+ }
+}
+
+
+
+
 
